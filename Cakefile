@@ -1,22 +1,29 @@
 {spawn, exec} = require 'child_process'
 
+_ = require 'lodash'
 
-test = (opts, callback) ->
-  options = [
-    '--compilers', 'coffee:coffee-script',
-    '--recursive',
-    './test/',
-  ]
-  options.push(o) for o in opts
-  proc = spawn 'mocha', options, stdio:  'inherit'
-  proc.stdout = process.stdout
-  proc.stderr = process.stderr
-  process.on 'exit', (status) ->
-    callback?(status)
+nodeBinary = (name) -> "node_modules/.bin/#{name}"
 
+launch = (cmd, options=[], callback) ->
+  env = _.extend process.env,
+    NODE_PATH: "./lib:#{process.env.NODE_PATH}"
+  proc = spawn cmd, options, env
+  proc.stdout.pipe(process.stdout)
+  proc.stderr.pipe(process.stderr)
+  proc.on 'exit', (status) -> callback?() if status is 0
 
-task 'test', 'Run Tests', ->
-  test([])
+test = (options=[], callback) ->
+  if typeof options is 'function'
+    callback = options
+    options = []
 
-task 'watch', 'Watch Tests', ->
-  test(['--watch'])
+  options.push '--compilers'
+  options.push 'coffee:coffee-script'
+  options.push '--colors'
+  options.push '-R'
+  options.push 'spec'
+
+  launch nodeBinary('mocha'), options, callback
+
+task 'test', 'Run tests', -> test()
+task 'test:watch', 'Watch tests', -> test ['-w']
