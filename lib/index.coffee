@@ -1,7 +1,6 @@
 _ = require 'lodash'
 
-
-mixinEvents = (obj) ->
+module.exports = (obj) ->
   obj_destroy = obj.destroy
 
   _.extend obj,
@@ -32,6 +31,3 @@ mixinEvents = (obj) ->
         idx = @_listeners[pattern].indexOf(callback)
         if idx != -1
           @_listeners[pattern].splice(idx, 1)
-
-
-module.exports = mixinEvents
