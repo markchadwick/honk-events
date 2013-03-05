@@ -24,8 +24,7 @@ mixinEvents = (obj) ->
 
     _bindListener: (pattern, callback) ->
       for p in pattern.split(' ')
-        @_listeners[pattern] or= []
-        @_listeners[pattern].push(callback)
+        (@_listeners[pattern] or= []).push(callback)
 
     _unbindListener: (pattern, callback) ->
       for p in pattern.split(' ')
