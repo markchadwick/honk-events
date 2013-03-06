@@ -7,32 +7,38 @@ simple mechanism to cleanup bindings for objects that are about to be destroyed
 Usage
 -----
 
-    mixinEvents = require 'honk-events'
+```coffee
+mixinEvents = require 'honk-events'
 
-    class Producer
-      constructor: ->
-        mixinEvents(this)
+class Producer
+  constructor: ->
+    mixinEvents(this)
 
-      announce: (name) ->
-        @trigger 'say', name
+  announce: (name) ->
+    @trigger 'say', name
 
-    class Consumer
-      constructor: (producer) ->
-        mixinEvents(this)
+class Consumer
+  constructor: (producer) ->
+    mixinEvents(this)
 
-        @on producer, 'say', (name) ->
-          console.log "Producer said '#{name}!'"
+    @on producer, 'say', (name) ->
+      console.log "Producer said '#{name}!'"
 
-      destroy: ->
-        console.log 'Goodbye cruel world'
+  destroy: ->
+    console.log 'Goodbye cruel world'
 
 
-    producer = new Producer()
-    consumer = new Consumer()
+producer = new Producer()
+consumer = new Consumer()
 
-    producer.say 'Hello!'
-    # >>> Producer said 'Hello!!'
+producer.say 'Hello!'
+# >>> Producer said 'Hello!!'
 
-    # Clean up any events the consumer has accumulated
-    consumer.destroy()
-    # >>> Goodbye curel world
+# Clean up any events the consumer has accumulated
+consumer.destroy()
+# >>> Goodbye curel world
+```
+
+Build status
+------------
+[![Build Status](https://secure.travis-ci.org/markchadwick/honk-events.png)](http://travis-ci.org/markchadwick/honk-events)
