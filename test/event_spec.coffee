@@ -75,3 +75,31 @@ describe 'Events', ->
 
     consumer2.destroy()
     expect(producer._listeners['say']).to.be.empty
+
+  it 'should not allow events to be re-mixed in', ->
+    eventted = new Eventted()
+    reMixin  = -> events(eventted)
+    expect(reMixin).to.throw /Events already mixed in/
+
+  it 'should preserve the origional objects destroy method', (done) ->
+    class RobertOppenheimer
+      constructor: -> events(this)
+      destroy: -> done()
+
+    producer  = new Eventted()
+    robby     = new RobertOppenheimer()
+
+    expect(robby._listeningTo).to.have.length 0
+    robby.on producer, 'say', (name) ->
+    expect(robby._listeningTo).to.have.length 1
+
+    robby.destroy()
+    expect(robby._listeningTo).to.have.length 0
+
+  it 'should know when the mixin is applied', ->
+    class User
+
+    user = new User()
+    expect(events.isApplied(user)).to.be.false
+    events(user)
+    expect(events.isApplied(user)).to.be.true

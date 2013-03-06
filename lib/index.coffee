@@ -1,6 +1,11 @@
 _ = require 'lodash'
 
-module.exports = (obj) ->
+isApplied = (obj) -> obj._listeners?
+
+mixinEvents = (obj) ->
+  if isApplied(obj)
+    throw Error("Events already mixed in to #{obj}")
+
   obj_destroy = obj.destroy
 
   _.extend obj,
@@ -31,3 +36,7 @@ module.exports = (obj) ->
         idx = @_listeners[pattern].indexOf(callback)
         if idx != -1
           @_listeners[pattern].splice(idx, 1)
+
+mixinEvents.isApplied = isApplied
+
+module.exports = mixinEvents
