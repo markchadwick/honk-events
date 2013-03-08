@@ -1,5 +1,8 @@
 Honk! Events!
 =============
+
+[Docs live here](http://markchadwick.github.com/honk-events/)
+
 A super-small events package for adding basic events to instances. There's a
 simple mechanism to cleanup bindings for objects that are about to be destroyed
 (so they don't hang around un-GC-able forever). It's reccomended.
