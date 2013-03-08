@@ -1,0 +1,158 @@
+<!DOCTYPE html>  <html> <head>   <title>index.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="index.html">                 index.coffee               </a>                                           <a class="source" href="tests.html">                 tests.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               index.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>               <p><strong>Honk! Events!</strong> is a very small stand-alone event system that provides the
+means to clean up after itself. Before an instance and produce <em>or consume</em>
+events, it must mix in the event library. The simplest example follows.</p>
+
+<pre><code>mixinEvents = require 'honk-events'
+
+class Producer
+  constructor: (@name) -&gt;
+    mixinEvents(this)
+
+  say: (message)
+    @trigger 'say', "#{@name} said #{message}"
+
+class Consumer
+  constructor: (name, producers...) -&gt;
+    mixinEvents(this)
+
+    for producer in producers
+      @on producer, 'say', (message) -&gt;
+        console.log "[#{name}] #{message}"
+
+producer1 = new Producer('p1')
+producer2 = new Producer('p2')
+consumer1 = new Consumer('c1', producer1, producer2)
+consumer2 = new Consumer('c2', producer1, producer2)
+
+# Trigger a message on p1 which should be relayed to each of the
+# consumers.
+producer1.say 'hello'
+&gt;&gt;&gt; [c1] p1 said hello
+&gt;&gt;&gt; [c2] p1 said hello
+
+# destroy consumer1, cleaning up all of its references
+consumer1.destory()
+
+# Trigger a message on p2, which now only has c2 bound to its events, as
+# c1 has been destroyed.
+producer2.say 'party anyone?'
+&gt;&gt;&gt; [c2] p2 said party anyone?
+</code></pre>
+
+<h2>Event Cleanup</h2>
+
+<p>One genesis for a li'l event library was proper event cleanup. It's important
+to call <code>destroy</code> on an instance after it should no longer receive events.
+With standard event binding, a reference to an instance may leak when scoping
+the callback, which prevents the instance from being garbage collected.</p>
+
+<h2>Tests</h2>
+
+<p>The idea that consumers must be bound to an event-aware instance may clash
+with test code. For <a href="http://visionmedia.github.com/mocha/">Mocha</a> and
+<a href="http://pivotal.github.com/jasmine/">Jasmine</a> tests, see the reference <a href="./tests.html">test
+mixin</a>. It will set up the appropriate setup and teardown
+methods so that tests can consume methods.</p>
+
+<pre><code>require 'honk-events/lib/tests'
+
+describe 'Echos', -&gt;
+  it 'should produce events', (done) -&gt;
+    echo = new EchoProducer()
+    @on echo, 'echo', (message) -&gt;
+      expect(message).to.equal 'bonjour'
+      done()
+
+    echo.trigger 'echo', 'bonjour'
+</code></pre>
+
+<p>The provided code can serve as a guide for other test systems. All four lines
+of it.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">_ = </span><span class="nx">require</span> <span class="s1">&#39;lodash&#39;</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p><code>isApplied</code> It's considered an error to mix in the event system to an object
+more than once, so it is sometimes nice to know if it's already been mixed in
+(such as in the case of a cached object factory). This implementation is naive
+and subject to change.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">isApplied = </span><span class="nf">(obj) -&gt;</span> <span class="nx">obj</span><span class="p">.</span><span class="nx">_listeners</span><span class="o">?</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Expand an event pattern into a list of discrete event names. For the moment,
+this simply splits on a space and gives any non-empty pattern.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">split = </span><span class="nf">(events) -&gt;</span> <span class="nx">event</span> <span class="k">for</span> <span class="nx">event</span> <span class="k">in</span> <span class="nx">events</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="k">when</span> <span class="nx">event</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p><code>mixinEvents</code> Mix in methods of the event system to an object. It's worth
+noting that events keep track of all their bindings, so it's expected that
+this not be something funky like a function or a class.</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="nv">mixinEvents = </span><span class="nf">(obj) -&gt;</span>
+  <span class="k">if</span> <span class="nx">isApplied</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span>
+    <span class="k">throw</span> <span class="nb">Error</span><span class="p">(</span><span class="s2">&quot;Events already mixed in to #{obj}&quot;</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>The method to clean up event bindings of an instance is <code>destroy</code>. However,
+if a <code>destroy</code> property already exists on the object, it will still be
+invoked. Here a local reference is copied before the method is overwritten.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nv">obj_destroy = </span><span class="nx">obj</span><span class="p">.</span><span class="nx">destroy</span>
+
+  <span class="nx">_</span><span class="p">.</span><span class="nx">extend</span> <span class="nx">obj</span><span class="p">,</span>
+    <span class="nv">_listeners: </span><span class="p">{}</span>
+    <span class="nv">_listeningTo: </span><span class="p">[]</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <h2>on(producer, events, callback)</h2>
+
+<p>Sets up an event binding on a consumer. The pattern may be a
+space-delimited string of callbacks. For example:</p>
+
+<pre><code>@on producer, 'click hover', (el) -&gt;
+  console.log('interacted with', el)
+</code></pre>
+
+<p>Unlike some other event libraries, take care to note that the <code>all</code> event
+has no special meaning and will not bind to all events.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kc">on</span><span class="o">:</span> <span class="nf">(producer, events, callback) -&gt;</span>
+      <span class="k">for</span> <span class="nx">event</span> <span class="k">in</span> <span class="nx">split</span><span class="p">(</span><span class="nx">events</span><span class="p">)</span>
+        <span class="nx">@_listeningTo</span><span class="p">.</span><span class="nx">push</span><span class="p">([</span><span class="nx">producer</span><span class="p">,</span> <span class="nx">event</span><span class="p">,</span> <span class="nx">callback</span><span class="p">])</span>
+        <span class="nx">producer</span><span class="p">.</span><span class="nx">_bindListener</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <h2>trigger(events, data...)</h2>
+
+<p>Triggers an event and sends the payload to all interested consumers. Each
+consumer will run in the current thread of execution. If multiple
+arguments are given, consumers will see them as separate arguments. For
+example:</p>
+
+<pre><code>mixinEvents = require 'honk-events'
+
+class Producer
+  constructor: (@prefix) -&gt;
+    mixinEvents(this)
+
+  announce: (message) -&gt;
+    @trigger('announce, @prefix, message)
+
+class Consumer
+  constructor: (producer) -&gt;
+    mixinEvents(this)
+    producer.on 'announce', (prefix, message) -&gt;
+      console.log prefix, 'said', message
+</code></pre>
+
+<p>In this example, the consumer's callback will get <code>@prefix</code> and <code>message</code>
+as independent arguments to its callback. If its callback only provided
+one function argument, it would only receive <code>@prefix</code>.</p>
+
+<p>Note that each callback is invoked in the current thread of execution. If
+there is a potentially invasive callback, it may prevent other callbacks
+from running promptly. Similarly, if an exception is thrown</p>
+
+<p>If multiple space-delimited event types are given, all will be triggered.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">trigger: </span><span class="nf">(events, data...) -&gt;</span>
+      <span class="nx">f</span><span class="p">(</span><span class="nx">data</span><span class="p">...)</span> <span class="k">for</span> <span class="nx">f</span> <span class="k">in</span> <span class="p">(</span><span class="nx">@_listeners</span><span class="p">[</span><span class="nx">event</span><span class="p">]</span> <span class="o">or</span> <span class="p">[])</span> <span class="k">for</span> <span class="nx">event</span> <span class="k">in</span> <span class="nx">split</span><span class="p">(</span><span class="nx">events</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <h2>destroy()</h2>
+
+<p>When an event-aware instance is destroyed, its consuming callbacks are
+destroyed with it. Likewise, the consumers of its producing callbacks will
+be cleaned up. As mentioned in the opening, if a <code>destroy</code> method is
+already present on the instance, it will be invoked after all callbacks
+have been cleaned up.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">destroy: </span><span class="o">-&gt;</span>
+      <span class="k">for</span> <span class="p">[</span><span class="nx">producer</span><span class="p">,</span> <span class="nx">event</span><span class="p">,</span> <span class="nx">callback</span><span class="p">]</span> <span class="k">in</span> <span class="nx">@_listeningTo</span>
+        <span class="nx">producer</span><span class="p">.</span><span class="nx">_unbindListener</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span>
+      <span class="vi">@_listeningTo = </span><span class="p">[]</span>
+      <span class="vi">@_listeners = </span><span class="p">{}</span>
+      <span class="nx">obj_destroy</span><span class="o">?</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">obj</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p><code>_bindListener</code> Takes a pattern of events and binds the callback of each
+to the producer. This will not (in itself) track any event bindings from
+the consuer's point of view.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">_bindListener: </span><span class="nf">(pattern, callback) -&gt;</span>
+      <span class="k">for</span> <span class="nx">p</span> <span class="k">in</span> <span class="nx">pattern</span><span class="p">.</span><span class="nx">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="p">(</span><span class="nx">@_listeners</span><span class="p">[</span><span class="nx">pattern</span><span class="p">]</span> <span class="o">or=</span> <span class="p">[]).</span><span class="nx">push</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p><code>_unbindListener</code> will will walk the bindings of a producer when a
+consumer is destroyed and unregister each callback.</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="nv">_unbindListener: </span><span class="nf">(event, callback) -&gt;</span>
+      <span class="k">return</span> <span class="nx">unless</span> <span class="nx">@_listeners</span><span class="p">[</span><span class="nx">event</span><span class="p">]</span>
+      <span class="nv">idx = </span><span class="nx">@_listeners</span><span class="p">[</span><span class="nx">event</span><span class="p">].</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">callback</span><span class="p">)</span>
+      <span class="k">if</span> <span class="nx">idx</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="nx">@_listeners</span><span class="p">[</span><span class="nx">event</span><span class="p">].</span><span class="nx">splice</span><span class="p">(</span><span class="nx">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="nv">mixinEvents.isApplied = </span><span class="nx">isApplied</span>
+<span class="nv">mixinEvents._split_   = </span><span class="nx">split</span>
+
+
+<span class="nv">module.exports = </span><span class="nx">mixinEvents</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
