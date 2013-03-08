@@ -1,15 +1,18 @@
 {
   "name":     "honk-events",
-  "version":  "0.0.3",
+  "version":  "0.0.4",
   "main":     "./lib/index.coffee",
-  "dependencies": {
-    "coffee-script":  ">= 1.5.0",
-    "lodash":         "1.0.x"
-  },
   "devDependencies": {
-    "mocha":          "1.8.1",
     "chai":           "1.5.0",
-    "docco":          "0.4.0"
+    "coffee-script":  ">= 1.5.0",
+    "docco":          "0.4.x",
+    "glob":           "3.1.21",
+    "honk-cake":      "0.0.x",
+    "lodash":         "1.0.1",
+    "mocha":          "1.8.1",
+    "q":              "0.9.x",
+    "temp":           "0.5.0",
+    "walk":           "2.2.x"
   },
   "scripts": {
     "test":           "cake test"
