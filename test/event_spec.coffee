@@ -83,19 +83,34 @@ describe 'An event-aware instance', ->
   it 'should disassocaite itself with a space-delimited events on destroy'
 
   describe 'as a producer', ->
-    it 'should clean up its consumers when destroyed'
+    it 'should clean up its consumers when destroyed', ->
+      producer = new Eventted()
+      consumer = new Eventted()
 
-    # it 'should trigger all events specified in a pattern', (done) ->
-    #   producer = new Eventted()
-    #   consumer = new Eventted()
+      consumer.on producer, 'my pattern', ->
 
-    #   firstCalled = false
-    #   consumer.on producer, 'first', ->
-    #     firstCalled = true
+      expect(Object.keys(producer._listeners)).to.have.length 2
+      expect(consumer._listeningTo).to.have.length 2
 
-    #   consumer.on producer, 'second', ->
-    #     expect(firstCalled).to.be.true
-    #     done()
+      consumer.destroy()
+
+      expect(Object.keys(producer._listeners)).to.have.length 0
+      expect(consumer._listeningTo).to.have.length 0
+
+
+    it 'should trigger all events specified in a pattern', (done) ->
+      producer = new Eventted()
+      consumer = new Eventted()
+
+      firstCalled = false
+      consumer.on producer, 'first', ->
+        firstCalled = true
+
+      consumer.on producer, 'second', ->
+        expect(firstCalled).to.be.true
+        done()
+
+      producer.trigger 'first second'
 
   describe 'as a consumer', ->
     it 'should clean up references on destroy', ->
@@ -124,7 +139,14 @@ describe 'An event-aware instance', ->
       consumer2.destroy()
       expect(producer._listeners['say']).to.be.empty
 
-    it 'should no receive no callbacks after being destroyed'
+    it 'should no receive no callbacks after being destroyed', ->
+      producer = new Eventted()
+      consumer = new Eventted()
+
+      consumer.on producer, 'event', -> fail('Should not have happened!')
+      consumer.destroy()
+
+      producer.trigger 'event'
 
 describe 'split', ->
   beforeEach ->

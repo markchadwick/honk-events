@@ -173,6 +173,7 @@ mixinEvents = (obj) ->
       idx = @_listeners[event].indexOf(callback)
       if idx != -1
         @_listeners[event].splice(idx, 1)
+        if @_listeners[event].length == 0 then delete @_listeners[event]
 
 
 mixinEvents.isApplied = isApplied
