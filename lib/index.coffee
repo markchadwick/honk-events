@@ -107,9 +107,10 @@ mixinEvents = (obj) ->
     # Unlike some other event libraries, take care to note that the `all` event
     # has no special meaning and will not bind to all events.
     on: (producer, events, callback) ->
+      scopedCallback = _.bind(callback, this)
       for event in split(events)
-        @_listeningTo.push([producer, event, callback])
-        producer._bindListener(event, callback)
+        @_listeningTo.push([producer, event, scopedCallback])
+        producer._bindListener(event, scopedCallback)
 
     # trigger(events, data...)
     # -------------------------

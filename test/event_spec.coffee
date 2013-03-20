@@ -3,11 +3,17 @@ events  = require '../lib/index'
 
 
 class Eventted
-  constructor: ->
+  constructor: (@name='Eventted') ->
     events(this)
 
 
 describe 'An event-aware instance', ->
+
+  beforeEach ->
+    unless events.isApplied(this) then events(this)
+
+  afterEach ->
+    @destroy()
 
   it 'should trigger simple events', (done) ->
     producer = new Eventted()
@@ -88,11 +94,13 @@ describe 'An event-aware instance', ->
       consumer = new Eventted()
 
       consumer.on producer, 'my pattern', ->
+        throw Error('should have never been called')
 
       expect(Object.keys(producer._listeners)).to.have.length 2
       expect(consumer._listeningTo).to.have.length 2
 
       consumer.destroy()
+      producer.trigger 'my pattern'
 
       expect(Object.keys(producer._listeners)).to.have.length 0
       expect(consumer._listeningTo).to.have.length 0
@@ -143,10 +151,27 @@ describe 'An event-aware instance', ->
       producer = new Eventted()
       consumer = new Eventted()
 
-      consumer.on producer, 'event', -> fail('Should not have happened!')
+      consumer.on producer, 'event', ->
+        throw Error('Should not have happened!')
       consumer.destroy()
 
       producer.trigger 'event'
+
+    it 'should have "this" properly scoped in the callback', (done) ->
+      @myCoolObject =
+        name: 'seventeen'
+        favoriteNumber: 17
+
+      producer = new Eventted()
+
+      @on producer, 'trigger', (arg) ->
+        expect(arg).to.equal 'bonjour'
+        expect(@myCoolObject).to.exist
+        expect(@myCoolObject.name).to.equal 'seventeen'
+
+        done()
+
+      producer.trigger('trigger', 'bonjour')
 
 describe 'split', ->
   beforeEach ->
