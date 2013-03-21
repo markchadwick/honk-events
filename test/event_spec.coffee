@@ -61,21 +61,6 @@ describe 'An event-aware instance', ->
     reMixin  = -> events(eventted)
     expect(reMixin).to.throw /Events already mixed in/
 
-  it 'should preserve the original objects destroy method', (done) ->
-    class RobertOppenheimer
-      constructor: -> events(this)
-      destroy: -> done()
-
-    producer  = new Eventted()
-    robby     = new RobertOppenheimer()
-
-    expect(robby._listeningTo).to.have.length 0
-    robby.on producer, 'say', (name) ->
-    expect(robby._listeningTo).to.have.length 1
-
-    robby.destroy()
-    expect(robby._listeningTo).to.have.length 0
-
   it 'should know when the mixin is applied', ->
     class User
 
@@ -87,6 +72,35 @@ describe 'An event-aware instance', ->
   it 'should invoke subsequent callbacks after an exception is thrown'
 
   it 'should disassocaite itself with a space-delimited events on destroy'
+
+  describe 'when overriding destroy', ->
+    it 'should preserve the original objects destroy method', (done) ->
+      class RobertOppenheimer
+        constructor: -> events(this)
+        destroy: -> done()
+
+      producer  = new Eventted()
+      robby     = new RobertOppenheimer()
+
+      expect(robby._listeningTo).to.have.length 0
+      robby.on producer, 'say', (name) ->
+      expect(robby._listeningTo).to.have.length 1
+
+      robby.destroy()
+      expect(robby._listeningTo).to.have.length 0
+
+    it 'should pass given arguments to the implementation', ->
+      class Destroyable
+        constructor: -> events(this)
+        destroy: (key) -> expect(key).to.equal 'pantaloons'
+      new Destroyable().destroy('pantaloons')
+
+    it 'should return the orig return value', ->
+      class Destroyable
+        constructor: (@name) -> events(this)
+        destroy: (word) -> "#{@name} said #{word}"
+      destroyable = new Destroyable('city boy')
+      expect(destroyable.destroy('sushi')).to.equal 'city boy said sushi'
 
   describe 'as a producer', ->
     it 'should clean up its consumers when destroyed', ->

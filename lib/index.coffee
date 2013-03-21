@@ -158,7 +158,7 @@ mixinEvents = (obj) ->
         producer._unbindListener(event, callback)
       @_listeningTo = []
       @_listeners = {}
-      obj_destroy?.apply(obj)
+      obj_destroy?.call(this, arguments...)
 
     # `_bindListener` Takes a pattern of events and binds the callback of each
     # to the producer. This will not (in itself) track any event bindings from
