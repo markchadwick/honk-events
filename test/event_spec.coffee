@@ -102,6 +102,8 @@ describe 'An event-aware instance', ->
       destroyable = new Destroyable('city boy')
       expect(destroyable.destroy('sushi')).to.equal 'city boy said sushi'
 
+    it 'should wait for a deferred if given'
+
   describe 'as a producer', ->
     it 'should clean up its consumers when destroyed', ->
       producer = new Eventted()

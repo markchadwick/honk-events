@@ -154,11 +154,12 @@ mixinEvents = (obj) ->
     # already present on the instance, it will be invoked after all callbacks
     # have been cleaned up.
     destroy: ->
+      result = obj_destroy?.call(this, arguments...)
       for [producer, event, callback] in @_listeningTo
         producer._unbindListener(event, callback)
       @_listeningTo = []
       @_listeners = {}
-      obj_destroy?.call(this, arguments...)
+      result
 
     # `_bindListener` Takes a pattern of events and binds the callback of each
     # to the producer. This will not (in itself) track any event bindings from
